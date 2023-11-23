@@ -1,5 +1,14 @@
 {
   "server": {
+    "host": "localhost",
     "port": 8000
+  },
+  "env": "production",
+  "db": {
+    "host": "localhost",
+    "dialect": "mysql",
+    "user": "",
+    "password": "",
+    "db": ""
   }
 }
