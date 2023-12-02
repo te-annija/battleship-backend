@@ -31,6 +31,12 @@ export class UserService {
    * @returns The updated user details.
    */
   update = async (id: number, payload: Partial<UserInput>): Promise<UserOutput> => {
+    if (payload.password) {
+      const salt: string = await bcrypt.genSalt(10)
+      const hash: string = await bcrypt.hash(payload.password, salt)
+      payload.password = hash
+    }
+
     const user: User | null = await User.findByPk(id)
     if (!user) {
       throw new Error('Could not update user. User not found.')
@@ -71,16 +77,28 @@ export class UserService {
    */
   deleteById = async (id: number): Promise<boolean> => {
     const deletedUserCount: number = await User.destroy({
-      where: { id }
+      where: { id },
+      individualHooks: true
     })
     return !!deletedUserCount
+  }
+
+  /**
+   * Restores a user by ID from soft-delete.
+   * @param id The ID of the user to restore.
+   * @returns
+   */
+  restoreById = async (id: number): Promise<void> => {
+    return await User.restore({
+      where: { id }
+    })
   }
 
   /**
    * Retrieves all users.
    * @returns Array of user objects containing all user details.
    */
-  getAll = async (): Promise<UserOutput[]> => {
-    return User.findAll()
+  getAll = async (options?: any): Promise<UserOutput[]> => {
+    return User.findAll(options)
   }
 }

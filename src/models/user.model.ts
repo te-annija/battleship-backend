@@ -17,13 +17,19 @@ interface UserAttributes {
   /** The user password stored as a hashed value. */
   password: string
 
+  /** True if user is a administrator, false otherwise. */
+  isAdmin: boolean
+
+  /** Date and time when the user's block will be lifted. */
+  blockExpiresAt?: Date | null
+
   createdAt?: Date
   updatedAt?: Date
   deletedAt?: Date
 }
 
 /** User attributes that are necessary for creation of object and possible to update. */
-export interface UserInput extends Optional<UserAttributes, 'id'> {}
+export interface UserInput extends Optional<UserAttributes, 'id' | 'isAdmin'> {}
 
 /** User attibutes returned when accessing the model. */
 export interface UserOutput extends Required<UserAttributes> {}
@@ -38,6 +44,12 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
 
   /** The user password stored as a hashed value. */
   public password!: string
+
+  /** True if user is a administrator, false otherwise. */
+  public isAdmin!: boolean
+
+  /** Date and time when the user's block will be lifted. */
+  public blockExpiresAt!: Date | null
 
   public readonly updatedAt!: Date
   public readonly createdAt!: Date
@@ -55,7 +67,10 @@ User.init(
     username: {
       type: DataTypes.STRING(32),
       allowNull: false,
-      unique: true,
+      unique: {
+        name: 'username',
+        msg: 'This username is already taken.'
+      },
       validate: {
         len: {
           args: [2, 32],
@@ -72,7 +87,34 @@ User.init(
           msg: 'Password length must be between 8 and 128 characters'
         }
       }
+    },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+    blockExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   },
   { timestamps: true, sequelize, paranoid: true }
 )
+
+User.addHook('beforeDestroy', (user: User) => {
+  /** Forbid deleting the first admin. */
+  if (user.username === 'admin') {
+    return Promise.reject(new Error('Unauthorized to delete this user.'))
+  }
+})
+
+User.addHook('beforeUpdate', (user: User) => {
+  /** Forbid to change crutial data for the first admin. */
+  if (
+    user.id === 1 &&
+    (user.changed('username') || user.changed('isAdmin') || user.changed('blockExpiresAt'))
+  ) {
+    return Promise.reject(new Error('Unauthorized to update this user data.'))
+  }
+})

@@ -5,5 +5,6 @@
  */
 
 import { UserController } from './user.controller'
+import { GameController } from './game.controller'
 
-export { UserController }
+export { UserController, GameController }

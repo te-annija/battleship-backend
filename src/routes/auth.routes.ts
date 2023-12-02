@@ -8,6 +8,7 @@ import passport from 'passport'
 import jwt from 'jsonwebtoken'
 import config from 'config'
 import { User } from '../models'
+import * as middleware from '../middleware'
 
 const router = Router()
 
@@ -42,7 +43,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 
         req.login(user, { session: false }, async (error) => {
           if (error) return next(error)
-          const body = { id: user.id, username: user.username }
+          const body = { id: user.id, username: user.username, isAdmin: user.isAdmin }
           const token = jwt.sign({ user: body }, config.get('jwt_secret'))
           return res.status(200).json({ message: info.message, token, user: body })
         })
@@ -54,6 +55,22 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
     return next(error)
   }
 })
+
+/** Route to validate if user is authentificated and is not blocked. */
+router.get('/', middleware.verifyUserToken, middleware.checkIfBlocked, (req, res) => {
+  res.status(200).json('You have accessed a protected route!')
+})
+
+/** Route to validate if user is an admin. */
+router.get(
+  '/admin',
+  middleware.verifyUserToken,
+  middleware.authorizeAdmin,
+  middleware.checkIfBlocked,
+  (req, res) => {
+    res.status(200).json('You have accessed a protected route!')
+  }
+)
 
 /** Test route for registered user authorization. */
 router.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {

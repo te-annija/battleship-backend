@@ -32,12 +32,6 @@ passport.use(
           return done(null, false, { message: 'Please fill in all the fields.' })
         }
 
-        // Checking if the username already exists.
-        const userExisting: UserOutput | null = await userService.getByUsername(username)
-        if (userExisting) {
-          return done(null, false, { message: 'Username is already taken.' })
-        }
-
         // Checking if password matches the confirmation.
         if (password !== confirm) {
           return done(null, false, { message: 'Password must match.' })
@@ -79,6 +73,20 @@ passport.use(
         if (!validate) {
           return done(null, false, { message: 'Invalid username or password' })
         }
+        // Checking if user is not blocked.
+        const currentDate = new Date()
+        if (user.blockExpiresAt && user.blockExpiresAt > currentDate) {
+          const formatedDate = new Date(user.blockExpiresAt).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+          return done(null, false, {
+            message: `Profile blocked. Block expires at ${formatedDate}`
+          })
+        }
 
         return done(null, user, { message: 'Logged in Successfully!' })
       } catch (error) {
@@ -97,14 +105,19 @@ passport.use(
       secretOrKey: config.get('jwt_secret')
     },
     async (jwt_payload, done) => {
-      // Fetching user by username from JWT payload.
-      const user: UserOutput | null = await userService.getByUsername(jwt_payload.user.username)
-
-      if (user) {
-        return done(null, user) // User found, authorization successful.
+      console.log(jwt_payload)
+      try {
+        // Fetching user by username from JWT payload.
+        const user: UserOutput | null = await userService.getByUsername(jwt_payload.user.username)
+        if (user) {
+          return done(null, user)
+        }
+        return done(null, false)
+      } catch (error: any) {
+        return done(error)
       }
-
-      return done(null, false) // User not found, authorization failed.
     }
   )
 )
+
+export const verifyUser = passport.authenticate('jwt', { session: false })
