@@ -31,6 +31,16 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
   }
 })
 
+/** Route to create a new user. */
+router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const game: GameOutput = await gameController.create(req)
+    res.status(200).json({ message: 'Game saved successfully!', game })
+  } catch (error: any) {
+    next(error)
+  }
+})
+
 /** Route to update a game by ID. */
 router.put('/:id', async (req: Request, res: Response, next: NextFunction) => {
   try {

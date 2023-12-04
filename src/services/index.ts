@@ -6,5 +6,6 @@
 
 import { UserService } from './user.service'
 import { GameService } from './game.service'
+import { GameUserService } from './gameUser.service'
 
-export { UserService, GameService }
+export { UserService, GameService, GameUserService }

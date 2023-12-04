@@ -11,9 +11,6 @@ interface GameAttributes {
   /** The primary key and identifier of the game. */
   id: number
 
-  /** The identifier of the gameroom from the websocket. */
-  gameroomId: string
-
   /** The type of the game (computer, friend or random). */
   gameType: string
 
@@ -34,9 +31,6 @@ export interface GameOutput extends Required<GameAttributes> {}
 export default class Game extends Model<GameAttributes, GameInput> implements GameAttributes {
   /** The primary key and identifier of the game. */
   public id!: number
-
-  /** The identifier of the gameroom from the websocket. */
-  public gameroomId!: string
 
   /** The type of the game (computer, friend or random). */
   public gameType!: string
@@ -61,12 +55,8 @@ Game.init(
       autoIncrement: true,
       primaryKey: true
     },
-    gameroomId: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
     gameType: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.STRING,
       allowNull: false
     },
     winnerId: {
