@@ -40,7 +40,7 @@ export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) 
 
 /** Verify if user is authorized to modify protected fields. */
 export const authorizeUserProtected = (req: Request, res: Response, next: NextFunction) => {
-  const protectedFields = ['id', 'isAdmin', 'blockExpiresAt']
+  const protectedFields = ['id', 'isAdmin', 'blockExpiresAt', 'points', 'rankId']
   const authenticatedUser: any = req.user
 
   if (!authenticatedUser) {
@@ -65,8 +65,6 @@ export const checkIfBlocked = async (req: Request, res: Response, next: NextFunc
     next({ status: 403, message: 'Forbidden.' })
   } else {
     const user: any = await userService.getById(authenticatedUser.id)
-    console.log('here')
-    console.log(user)
     const currentDate = new Date()
     if (user.blockExpiresAt && user.blockExpiresAt > currentDate) {
       next({

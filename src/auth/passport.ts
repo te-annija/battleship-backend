@@ -105,7 +105,6 @@ passport.use(
       secretOrKey: config.get('jwt_secret')
     },
     async (jwt_payload, done) => {
-      console.log(jwt_payload)
       try {
         // Fetching user by username from JWT payload.
         const user: UserOutput | null = await userService.getByUsername(jwt_payload.user.username)
@@ -121,3 +120,19 @@ passport.use(
 )
 
 export const verifyUser = passport.authenticate('jwt', { session: false })
+
+// Strategy for JSON Web Token (JWT) authentication. Match registred users.
+passport.use(
+  'websocket',
+  new JwtStrategy(
+    {
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      secretOrKey: config.get('jwt_secret_ws')
+    },
+    async (jwt_payload, done) => {
+      return done(null, true)
+    }
+  )
+)
+
+export const verifyWebsocket = passport.authenticate('websocket', { session: false })

@@ -3,8 +3,9 @@
  * DESCRIPTION: File defines User model (this will create a table in database).
  * AUTHOR: Annija Karitone
  */
+import Rank from './rank.model'
 import sequelize from './sequelize'
-import { DataTypes, Model, Optional } from 'sequelize'
+import { DataTypes, Model, Op, Optional } from 'sequelize'
 
 /** Attributes stored in the User model */
 interface UserAttributes {
@@ -16,6 +17,12 @@ interface UserAttributes {
 
   /** The user password stored as a hashed value. */
   password: string
+
+  /** The total of user points. */
+  points: number
+
+  /** Reference to the user rank. */
+  rankId: string
 
   /** True if user is a administrator, false otherwise. */
   isAdmin: boolean
@@ -29,7 +36,8 @@ interface UserAttributes {
 }
 
 /** User attributes that are necessary for creation of object and possible to update. */
-export interface UserInput extends Optional<UserAttributes, 'id' | 'isAdmin'> {}
+export interface UserInput
+  extends Optional<UserAttributes, 'id' | 'isAdmin' | 'rankId' | 'points'> {}
 
 /** User attibutes returned when accessing the model. */
 export interface UserOutput extends Required<UserAttributes> {}
@@ -45,6 +53,12 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
   /** The user password stored as a hashed value. */
   public password!: string
 
+  /** The total of user points. */
+  public points!: number
+
+  /** Reference to the user rank. */
+  public rankId!: string
+
   /** True if user is a administrator, false otherwise. */
   public isAdmin!: boolean
 
@@ -54,6 +68,11 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
   public readonly updatedAt!: Date
   public readonly createdAt!: Date
   public readonly deletedAt!: Date
+
+  // Define relations
+  public static associate() {
+    User.belongsTo(Rank, { foreignKey: 'rankId', as: 'rank' })
+  }
 }
 
 /** Initilize User model fields and its properties. */
@@ -88,6 +107,29 @@ User.init(
         }
       }
     },
+    points: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+      validate: {
+        isInt: {
+          msg: 'Points must be an integer'
+        },
+        min: {
+          args: [0],
+          msg: 'Points must be greater than or equal to 0'
+        }
+      }
+    },
+    rankId: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1,
+      allowNull: false,
+      references: {
+        model: Rank,
+        key: 'id'
+      }
+    },
     isAdmin: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -109,7 +151,7 @@ User.addHook('beforeDestroy', (user: User) => {
   }
 })
 
-User.addHook('beforeUpdate', (user: User) => {
+User.addHook('beforeUpdate', async (user: User) => {
   /** Forbid to change crutial data for the first admin. */
   if (
     user.id === 1 &&
@@ -117,4 +159,22 @@ User.addHook('beforeUpdate', (user: User) => {
   ) {
     return Promise.reject(new Error('Unauthorized to update this user data.'))
   }
+
+  if (user.changed('points')) {
+    try {
+      const rank = await Rank.findOne({
+        where: { minimumPoints: { [Op.lte]: user.points } },
+        order: [['minimumPoints', 'DESC']]
+      })
+
+      if (rank) {
+        user.rankId = rank.id.toString()
+      }
+    } catch (error: any) {
+      /* empty */
+    }
+  }
 })
+
+// Define associations after all models are imported.
+User.associate()

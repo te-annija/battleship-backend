@@ -4,7 +4,7 @@
  */
 
 import { UserInput, UserOutput } from '../models/user.model'
-import { User } from '../models'
+import { Rank, User } from '../models'
 import bcrypt from 'bcryptjs'
 
 /**
@@ -50,7 +50,14 @@ export class UserService {
    * @returns The user details of user with given ID details or null if not found.
    */
   getById = async (id: number): Promise<UserOutput> => {
-    const user: User | null = await User.findByPk(id)
+    const user: User | null = await User.findByPk(id, {
+      include: [
+        {
+          model: Rank,
+          as: 'rank'
+        }
+      ]
+    })
     if (!user) {
       throw new Error('Could get user. User not found.')
     }
@@ -66,7 +73,13 @@ export class UserService {
     return await User.findOne({
       where: {
         username: username
-      }
+      },
+      include: [
+        {
+          model: Rank,
+          as: 'rank'
+        }
+      ]
     })
   }
 

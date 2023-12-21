@@ -45,7 +45,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
           if (error) return next(error)
           const body = { id: user.id, username: user.username, isAdmin: user.isAdmin }
           const token = jwt.sign({ user: body }, config.get('jwt_secret'))
-          return res.status(200).json({ message: info.message, token, user: body })
+          return res.status(200).json({ message: info.message, token, user: user })
         })
       } catch (error) {
         return next(error)

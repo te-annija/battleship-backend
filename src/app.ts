@@ -31,6 +31,7 @@ export class ExpressApp {
     this.app.use(express.urlencoded({ extended: true })) // Parse incoming URL-encoded data.
     this.app.use(passport.initialize()) // Initialize Passport for authentication.
     this.app.use(cors({ origin: config.get('app_url') })) // Enable CORS for a frontend server.
+    this.app.use(express.static('public')) // Serve static content from the 'public' directory.
   }
 
   /** Set up application API entry point. */
@@ -44,9 +45,6 @@ export class ExpressApp {
       if (res.headersSent) {
         return next(err)
       }
-
-      console.log(err)
-
       res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' })
     })
   }

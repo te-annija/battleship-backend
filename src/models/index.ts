@@ -8,5 +8,6 @@ import sequelize from './sequelize'
 import User from './user.model'
 import Game from './game.model'
 import GameUser from './gameUser.model'
+import Rank from './rank.model'
 
-export { sequelize, User, Game, GameUser }
+export { sequelize, User, Game, GameUser, Rank }

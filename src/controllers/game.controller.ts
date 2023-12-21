@@ -4,7 +4,7 @@
  */
 
 import { Request } from 'express'
-import { GameService, GameUserService } from '../services'
+import { GameService, GameUserService, UserService } from '../services'
 import { GameInput, GameOutput } from '../models/game.model'
 
 /**
@@ -13,17 +13,61 @@ import { GameInput, GameOutput } from '../models/game.model'
 export class GameController {
   private gameService = new GameService()
   private gameUserService = new GameUserService()
+  private userService = new UserService()
 
   create = async (req: Request): Promise<GameOutput> => {
-    const { gameroomId, winnerId, gameType, player1, player2 } = req.body
+    const { winnerId, gameType, player1, player2 } = req.body
 
-    const gameData: GameInput = { gameroomId, winnerId, gameType }
+    const gameData: GameInput = { winnerId, gameType }
+
+    try {
+      const user = await this.userService.getByUsername(winnerId)
+      if (user) {
+        gameData.winnerId = user.id
+      } else {
+        gameData.winnerId = null
+      }
+    } catch (error: any) {
+      gameData.winnerId = null
+    }
 
     const game = await this.gameService.create(gameData)
 
-    await this.gameUserService.create({ gameId: game.id, ...player1 })
-    await this.gameUserService.create({ gameId: game.id, ...player2 })
+    try {
+      const user = await this.userService.getByUsername(player1.userId)
+      if (user) {
+        player1.userId = user.id
+        await this.gameUserService.create({ gameId: game.id, ...player1 })
+        if (gameType === 'random' && player2.points) {
+          let userPoints = user.points + player1.points
+          if (userPoints < 0) {
+            userPoints = 0
+          }
 
+          await this.userService.update(user.id, { points: userPoints })
+        }
+      }
+    } catch (error: any) {
+      /* empty */
+    }
+
+    try {
+      const user = await this.userService.getByUsername(player2.userId)
+      if (user) {
+        player2.userId = user.id
+        await this.gameUserService.create({ gameId: game.id, ...player2 })
+        if (gameType === 'random' && player2.points) {
+          let userPoints = user.points + player2.points
+          if (userPoints < 0) {
+            userPoints = 0
+          }
+
+          await this.userService.update(user.id, { points: userPoints })
+        }
+      }
+    } catch (error: any) {
+      /* empty */
+    }
     return game
   }
 

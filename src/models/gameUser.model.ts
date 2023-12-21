@@ -22,7 +22,11 @@ interface GameUserAttributes {
   gameboard: string
 
   /** JSON string containing data of the user enemy gameboard and user actions on it. */
-  enemyGameboard: string
+  attackGameboard: string
+
+  /** Points earned in the game. */
+  points?: number
+
   createdAt?: Date
   updatedAt?: Date
   deletedAt?: Date
@@ -51,7 +55,10 @@ export default class GameUser
   public gameboard!: string
 
   /** JSON string containing data of the user enemy gameboard and user actions on it. */
-  public enemyGameboard!: string
+  public attackGameboard!: string
+
+  /** Points earned in the game. */
+  public points!: number
 
   public readonly updatedAt!: Date
   public readonly createdAt!: Date
@@ -91,9 +98,13 @@ GameUser.init(
       type: DataTypes.JSON,
       allowNull: false
     },
-    enemyGameboard: {
+    attackGameboard: {
       type: DataTypes.JSON,
       allowNull: false
+    },
+    points: {
+      type: DataTypes.NUMBER,
+      allowNull: true
     }
   },
   { timestamps: true, sequelize, paranoid: true }

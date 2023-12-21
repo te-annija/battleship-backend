@@ -29,6 +29,10 @@ export class UserController {
     return await this.userService.getById(Number(req.params.id))
   }
 
+  getByUsername = async (req: Request): Promise<UserOutput | null> => {
+    return await this.userService.getByUsername(req.params.username)
+  }
+
   deleteById = async (req: Request): Promise<Boolean> => {
     return await this.userService.deleteById(Number(req.params.id))
   }

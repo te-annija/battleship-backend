@@ -97,4 +97,19 @@ router.post(
   }
 )
 
+/** Route to fetch a user by Username. */
+router.get('/username/:username', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user: UserOutput | null = await userController.getByUsername(req)
+
+    if (!user) {
+      res.status(400).json({ message: 'User not found!' })
+    } else {
+      res.status(200).json({ user })
+    }
+  } catch (error: any) {
+    next(error)
+  }
+})
+
 export default router
