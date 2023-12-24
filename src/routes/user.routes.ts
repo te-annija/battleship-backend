@@ -112,4 +112,19 @@ router.get('/username/:username', async (req: Request, res: Response, next: Next
   }
 })
 
+/** Route to fetch user statistics. */
+router.get('/statistics/:id', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const statistics: any = await userController.getUserStatistics(req)
+
+    if (!statistics) {
+      res.status(400).json({ message: 'User not found!' })
+    } else {
+      res.status(200).json({ statistics })
+    }
+  } catch (error: any) {
+    next(error)
+  }
+})
+
 export default router

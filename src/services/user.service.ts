@@ -112,6 +112,34 @@ export class UserService {
    * @returns Array of user objects containing all user details.
    */
   getAll = async (options?: any): Promise<UserOutput[]> => {
-    return User.findAll(options)
+    return User.findAll({
+      ...options,
+      include: [
+        {
+          model: Rank,
+          as: 'rank'
+        }
+      ]
+    })
+  }
+
+  /**
+   * Retrieves user leaderboard position based on total gained points.
+   * @param id he ID of the user.
+   * @returns The leaderboard position of the user.
+   */
+  getCurrentLeaderboardPosition = async (id: number): Promise<number> => {
+    try {
+      // Fetch users sorted by points in descending order
+      const users = await User.findAll({
+        order: [['points', 'DESC']]
+      })
+
+      // Find the index of the user in the sorted list (adding 1 to get 1-based position)
+      return users.findIndex((user) => user.id === id) + 1
+    } catch (error) {
+      console.error('Error occurred while fetching leaderboard position:', error)
+      throw error
+    }
   }
 }

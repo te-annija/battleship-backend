@@ -3,15 +3,17 @@
  * AUTHOR: Annija Karitone
  */
 import { Request } from 'express'
-import { UserService } from '../services'
+import { GameUserService, UserService } from '../services'
 import { UserOutput } from '../models/user.model'
 import { Op } from 'sequelize'
+import { GameUser } from '../models'
 
 /**
  * Class contains controllers for user CRUD operations.
  */
 export class UserController {
   private userService = new UserService()
+  private gameUserService = new GameUserService()
 
   create = async (req: Request): Promise<UserOutput> => {
     return await this.userService.create(req.body)
@@ -42,11 +44,12 @@ export class UserController {
   }
 
   getAll = async (req: Request): Promise<UserOutput[]> => {
-    const { sortBy, sortOrder, filterBy, paranoid } = req.query as {
+    const { sortBy, sortOrder, filterBy, paranoid, limit } = req.query as {
       sortBy?: string
       sortOrder?: string
       filterBy?: string
       paranoid?: string
+      limit?: string
     }
 
     // Handle sorting parameters.
@@ -81,10 +84,81 @@ export class UserController {
     }
 
     // Handle result fetching.
-    return await this.userService.getAll({
+    const fetchOptions: any = {
       order: [[sortField, sortOrderValue]],
       where: filterCriteria,
-      paranoid: paranoid == 'true'
+      paranoid: paranoid === 'true'
+    }
+
+    if (limit && Number(limit) > 0) {
+      fetchOptions.limit = Number(limit)
+    }
+
+    return await this.userService.getAll(fetchOptions)
+  }
+
+  getUserStatistics = async (req: Request): Promise<any | null> => {
+    if (!req.params.id) {
+      return null
+    }
+    const userId: number = Number(req.params.id)
+
+    const statistics: any = {}
+
+    statistics.totalGamesPlayed = await this.gameUserService.getUserStatistics(userId, {})
+
+    statistics.totalGamesWon = await this.gameUserService.getUserStatistics(userId, {
+      winnerId: userId
     })
+
+    statistics.onlineGamesPlayed = await this.gameUserService.getUserStatistics(userId, {
+      gameType: 'random'
+    })
+
+    statistics.onlineGamesWon = await this.gameUserService.getUserStatistics(userId, {
+      winnerId: userId,
+      gameType: 'random'
+    })
+
+    statistics.leaderboardPosition = await this.userService.getCurrentLeaderboardPosition(userId)
+    const today = new Date()
+
+    today.setHours(0, 0, 0, 0) // Set the time to the beginning of the day
+    let date = new Date()
+    date.setDate(today.getDate() - 8)
+
+    statistics.weekPoints = await GameUser.sum('points', {
+      where: {
+        userId,
+        createdAt: {
+          [Op.between]: [date, today]
+        }
+      }
+    })
+
+    // Retrieve points for each day over the last 5 days
+    const pointsByDay = []
+    for (let i = 0; i < 7; i++) {
+      date.setDate(date.getDate() + 1)
+
+      const endDate = new Date(date)
+      endDate.setDate(date.getDate() + 1)
+      const pointsForDay = await GameUser.sum('points', {
+        where: {
+          userId,
+          createdAt: {
+            [Op.between]: [date, endDate]
+          }
+        }
+      })
+
+      pointsByDay.push({
+        date: endDate.getDate(),
+        points: pointsForDay || 0
+      })
+    }
+    statistics.pointsByDay = pointsByDay
+
+    return statistics
   }
 }
