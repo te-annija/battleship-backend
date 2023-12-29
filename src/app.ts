@@ -11,6 +11,7 @@ import config from 'config'
 import apiRouter from './routes'
 import './auth/passport'
 import './cron/index'
+import './models/associations/index'
 
 /**
  * Class that contains all methods responsible for Express configuration.

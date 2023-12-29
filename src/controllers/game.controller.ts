@@ -37,6 +37,7 @@ export class GameController {
       const user = await this.userService.getByUsername(player1.userId)
       if (user) {
         player1.userId = user.id
+        player1.rankId = user.rankId
         await this.gameUserService.create({ gameId: game.id, ...player1 })
         if (gameType === 'random' && player2.points) {
           let userPoints = user.points + player1.points
@@ -55,6 +56,7 @@ export class GameController {
       const user = await this.userService.getByUsername(player2.userId)
       if (user) {
         player2.userId = user.id
+        player2.rankId = user.rankId
         await this.gameUserService.create({ gameId: game.id, ...player2 })
         if (gameType === 'random' && player2.points) {
           let userPoints = user.points + player2.points

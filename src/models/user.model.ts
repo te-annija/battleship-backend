@@ -69,10 +69,7 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
   public readonly createdAt!: Date
   public readonly deletedAt!: Date
 
-  // Define relations
-  public static associate() {
-    User.belongsTo(Rank, { foreignKey: 'rankId', as: 'rank' })
-  }
+  public getUserGames: any
 }
 
 /** Initilize User model fields and its properties. */
@@ -175,6 +172,3 @@ User.addHook('beforeUpdate', async (user: User) => {
     }
   }
 })
-
-// Define associations after all models are imported.
-User.associate()

@@ -7,6 +7,7 @@ import { DataTypes, Model, Optional } from 'sequelize'
 import sequelize from './sequelize'
 import User from './user.model'
 import Game from './game.model'
+import Rank from './rank.model'
 
 interface GameUserAttributes {
   /** The primary key and identifier of the game user record. */
@@ -27,13 +28,16 @@ interface GameUserAttributes {
   /** Points earned in the game. */
   points?: number
 
+  /** User rank when game took place. */
+  rankId?: number
+
   createdAt?: Date
   updatedAt?: Date
   deletedAt?: Date
 }
 
 /** Game User attributes that are necessary for creation of object and possible to update. */
-export interface GameUserInput extends Optional<GameUserAttributes, 'id'> {}
+export interface GameUserInput extends Optional<GameUserAttributes, 'id' | 'points' | 'rankId'> {}
 
 /** Game User attibutes returned when accessing the model. */
 export interface GameUserOutput extends Required<GameUserAttributes> {}
@@ -60,15 +64,12 @@ export default class GameUser
   /** Points earned in the game. */
   public points!: number
 
+  /** User rank when game took place. */
+  public rankId!: number
+
   public readonly updatedAt!: Date
   public readonly createdAt!: Date
   public readonly deletedAt!: Date
-
-  // Define relations
-  public static associate() {
-    GameUser.belongsTo(User, { foreignKey: 'userId', as: 'user' })
-    GameUser.belongsTo(Game, { foreignKey: 'gameId', as: 'game' })
-  }
 }
 
 GameUser.init(
@@ -103,12 +104,18 @@ GameUser.init(
       allowNull: false
     },
     points: {
-      type: DataTypes.NUMBER,
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
       allowNull: true
+    },
+    rankId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Rank,
+        key: 'id'
+      }
     }
   },
   { timestamps: true, sequelize, paranoid: true }
 )
-
-// Define associations after all models are imported.
-GameUser.associate()

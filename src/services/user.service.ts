@@ -49,7 +49,7 @@ export class UserService {
    * @param id The ID of the user to retrieve.
    * @returns The user details of user with given ID details or null if not found.
    */
-  getById = async (id: number): Promise<UserOutput> => {
+  getById = async (id: number): Promise<User> => {
     const user: User | null = await User.findByPk(id, {
       include: [
         {

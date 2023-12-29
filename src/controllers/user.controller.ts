@@ -4,9 +4,9 @@
  */
 import { Request } from 'express'
 import { GameUserService, UserService } from '../services'
-import { UserOutput } from '../models/user.model'
+import User, { UserOutput } from '../models/user.model'
 import { Op } from 'sequelize'
-import { GameUser } from '../models'
+import { GameUser, Rank } from '../models'
 
 /**
  * Class contains controllers for user CRUD operations.
@@ -160,5 +160,47 @@ export class UserController {
     statistics.pointsByDay = pointsByDay
 
     return statistics
+  }
+
+  getUserGames = async (req: Request) => {
+    const user: User = await this.userService.getById(Number(req.params.id))
+    const filterCriteria: { [key: string]: any } = {}
+
+    if (req.query.filterBy && typeof req.query.filterBy === 'string') {
+      req.query.filterBy.split(',').forEach((filter) => {
+        const [key, value] = filter.split(':')
+        if (key === 'winner') {
+          filterCriteria[key] = value === '1' ? user.username : { [Op.ne]: user.username }
+        } else {
+          filterCriteria[key] = { [Op.like]: `%${value}%` }
+        }
+      })
+    }
+
+    return user.getUserGames({
+      where: {
+        gameType: filterCriteria.gameType || { [Op.like]: `%%` }
+      },
+      include: [
+        {
+          model: User,
+          as: 'winner',
+          attributes: ['username'],
+          required: false,
+          where: {
+            username: filterCriteria.winner || { [Op.like]: `%%` }
+          }
+        },
+        {
+          model: User,
+          as: 'players',
+          attributes: ['username'],
+          include: {
+            model: Rank,
+            as: 'rank'
+          }
+        }
+      ]
+    })
   }
 }

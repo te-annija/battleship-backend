@@ -127,4 +127,24 @@ router.get('/statistics/:id', async (req: Request, res: Response, next: NextFunc
   }
 })
 
+/** Route to fetch user game history. */
+router.get(
+  '/:id/games',
+  middleware.verifyUserToken,
+  middleware.authorizeUser,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const games: any = await userController.getUserGames(req)
+
+      if (!games) {
+        res.status(400).json({ message: 'Games not found!' })
+      } else {
+        res.status(200).json({ games })
+      }
+    } catch (error: any) {
+      next(error)
+    }
+  }
+)
+
 export default router

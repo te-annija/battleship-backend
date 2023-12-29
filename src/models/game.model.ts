@@ -41,11 +41,6 @@ export default class Game extends Model<GameAttributes, GameInput> implements Ga
   public readonly updatedAt!: Date
   public readonly createdAt!: Date
   public readonly deletedAt!: Date
-
-  // Define relations
-  public static associate() {
-    Game.belongsTo(User, { foreignKey: 'winnerId', as: 'winner' })
-  }
 }
 
 Game.init(
