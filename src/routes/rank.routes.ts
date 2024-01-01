@@ -8,24 +8,27 @@ import { Router, Request, Response, NextFunction } from 'express'
 import { RankController } from '../controllers'
 import { RankOutput } from '../models/rank.model'
 import multer from 'multer'
+import cloudinary from 'cloudinary'
 import * as middleware from '../middleware'
-import path from 'path'
 
 const router = Router()
 const rankController = new RankController()
 
-// Define storage for uploaded images
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'public/img/ranks')
-  },
-  filename: function (req, file, cb) {
-    cb(null, `rank-${req.params.id}${path.extname(file.originalname)}`)
+// Check allowed file extentions.
+const fileFilter = (req: Request, file: any, cb: any) => {
+  if (file.mimetype === 'image/svg' || file.mimetype === 'image/png') {
+    cb(null, true)
+  } else {
+    cb(null, false)
   }
-})
+}
 
-// Initialize multer instance with defined storage
-const upload = multer({ storage: storage })
+// Initialize multer instance with defined storage.
+const upload = multer({
+  storage: multer.diskStorage({}),
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 } // Limiting file size to 1MB
+})
 
 /** Route to fetch all ranks. */
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
@@ -49,9 +52,8 @@ router.post(
         return res.status(400).send('No file uploaded.')
       }
 
-      if (req.file) {
-        req.body.icon = `/img/ranks/${req.file.filename}`
-      }
+      const upload = await cloudinary.v2.uploader.upload(req.file.path)
+      req.body.icon = upload.secure_url
 
       await rankController.create(req)
       res.status(200).json({ message: 'Rank created successfully!' })
@@ -80,7 +82,8 @@ router.put(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (req.file) {
-        req.body.icon = `/img/ranks/${req.file.filename}`
+        const upload = await cloudinary.v2.uploader.upload(req.file.path)
+        req.body.icon = upload.secure_url
       }
 
       const rank: RankOutput = await rankController.update(req)
