@@ -8,9 +8,9 @@ import passport from 'passport'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 import { UserService } from '../services'
-import config from 'config'
 import { UserOutput } from '../models/user.model'
 import bcrypt from 'bcryptjs'
+import 'dotenv/config'
 
 const userService = new UserService()
 
@@ -102,7 +102,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get('jwt_secret')
+      secretOrKey: process.env.JWT_SECRET
     },
     async (jwt_payload, done) => {
       try {
@@ -127,7 +127,7 @@ passport.use(
   new JwtStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get('jwt_secret_ws')
+      secretOrKey: process.env.JWT_SECRET_WS
     },
     async (jwt_payload, done) => {
       return done(null, true)

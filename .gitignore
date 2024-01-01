@@ -3,3 +3,5 @@ dist/
 config/local.json
 /public
 
+# Environment file
+.env

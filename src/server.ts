@@ -7,8 +7,8 @@
 import { ExpressApp } from './app'
 import { sequelize } from './models'
 import { Sequelize } from 'sequelize'
-import config from 'config'
 import Http from 'http'
+import 'dotenv/config'
 
 /**
  * Class that contains all methods responsible for server configuration.
@@ -36,16 +36,15 @@ export class Server {
 
   /** Automatically synchronize Sequelize models with the database on development. */
   sequelizeSync = (): Promise<Sequelize> => {
-    return sequelize.sync({ alter: false && config.get('env') === 'development' })
+    return sequelize.sync({ alter: false && process.env.ENV === 'development' })
   }
 
   /** Open server listening for incoming request on port. */
   serverListen = (): Http.Server => {
-    const host: string = config.get(`server.host`)
-    const port: number = config.get(`server.port`)
+    const port: number = Number(process.env.PORT) || 8000
 
     return this.httpServer.listen(port, (): void => {
-      console.log(`Server is running on: http://${host}:${port}`)
+      console.log(`Server is running on port: ${port}`)
     })
   }
 

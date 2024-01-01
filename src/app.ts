@@ -7,8 +7,8 @@
 import express, { Express, NextFunction, Request, Response } from 'express'
 import cors from 'cors'
 import passport from 'passport'
-import config from 'config'
 import apiRouter from './routes'
+import 'dotenv/config'
 import './auth/passport'
 import './cron/index'
 import './models/associations/index'
@@ -31,7 +31,7 @@ export class ExpressApp {
     this.app.use(express.json()) // Parse incoming JSON data.
     this.app.use(express.urlencoded({ extended: true })) // Parse incoming URL-encoded data.
     this.app.use(passport.initialize()) // Initialize Passport for authentication.
-    this.app.use(cors({ origin: config.get('app_url') })) // Enable CORS for a frontend server.
+    this.app.use(cors({ origin: process.env.APP_URL })) // Enable CORS for a frontend server.
     this.app.use(express.static('public')) // Serve static content from the 'public' directory.
   }
 

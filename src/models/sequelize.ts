@@ -3,17 +3,17 @@
  * DESCRIPTION: File contains configurations for the database connection.
  * AUTHOR: Annija Karitone
  */
-import config from 'config'
-import { Sequelize } from 'sequelize'
+import { Dialect, Sequelize } from 'sequelize'
+import 'dotenv/config'
 
-const sequelize = new Sequelize(
-  config.get('db.db'),
-  config.get('db.user'),
-  config.get('db.password'),
-  {
-    host: config.get('db.host'),
-    dialect: config.get('db.dialect')
+const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
+  dialect: process.env.DATABASE_DIALECT as Dialect,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
   }
-)
+})
 
 export default sequelize
