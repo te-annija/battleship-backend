@@ -112,12 +112,12 @@ export class UserController {
     })
 
     statistics.onlineGamesPlayed = await this.gameUserService.getUserStatistics(userId, {
-      gameType: 'random'
+      gameType: 'online'
     })
 
     statistics.onlineGamesWon = await this.gameUserService.getUserStatistics(userId, {
       winnerId: userId,
-      gameType: 'random'
+      gameType: 'online'
     })
 
     statistics.leaderboardPosition = await this.userService.getCurrentLeaderboardPosition(userId)
@@ -131,7 +131,7 @@ export class UserController {
       where: {
         userId,
         createdAt: {
-          [Op.between]: [date, today]
+          [Op.between]: [date, new Date()]
         }
       }
     })

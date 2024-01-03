@@ -26,8 +26,8 @@ export class GameUserService {
    * @param payload The properties of game user that needs to be updated.
    * @returns The updated game user details.
    */
-  update = async (id: number, payload: Partial<GameUserInput>): Promise<GameUserOutput> => {
-    const game: GameUser | null = await GameUser.findByPk(id)
+  update = async (gameUserId: number, payload: Partial<GameUserInput>): Promise<GameUserOutput> => {
+    const game: GameUser | null = await GameUser.findByPk(gameUserId)
 
     if (!game) {
       throw new Error('Could not update game. Game not found.')
@@ -37,11 +37,11 @@ export class GameUserService {
 
   /**
    * Retrieves a game user by ID.
-   * @param id The ID of the game to retrieve.
+   * @param gameUserId The ID of the game to retrieve.
    * @returns The Game details of game with given ID details or null if not found.
    */
-  getById = async (id: number): Promise<GameUserOutput> => {
-    const game: GameUser | null = await GameUser.findByPk(id)
+  getById = async (gameUserId: number): Promise<GameUserOutput> => {
+    const game: GameUser | null = await GameUser.findByPk(gameUserId)
     if (!game) {
       throw new Error('Could get game. Game not found.')
     }
@@ -50,12 +50,12 @@ export class GameUserService {
 
   /**
    * Deletes a game user by ID.
-   * @param id The ID of the game user to delete.
+   * @param gameUserId The ID of the game user to delete.
    * @returns Boolean indicating whether the deletion was successful.
    */
-  deleteById = async (id: number): Promise<boolean> => {
+  deleteById = async (gameUserId: number): Promise<boolean> => {
     const deletedGameCount: number = await GameUser.destroy({
-      where: { id }
+      where: { gameUserId }
     })
     return !!deletedGameCount
   }

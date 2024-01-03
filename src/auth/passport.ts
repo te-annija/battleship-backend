@@ -25,10 +25,10 @@ passport.use(
     },
     async (req, username, password, done) => {
       try {
-        const { confirm } = req.body
+        const { confirm, email } = req.body
 
         // Checking for required fields.
-        if (!username || !password || !confirm) {
+        if (!username || !password || !confirm || !email) {
           return done(null, false, { message: 'Please fill in all the fields.' })
         }
 
@@ -38,7 +38,7 @@ passport.use(
         }
 
         // Creating a new user.
-        const user: UserOutput = await userService.create({ username, password })
+        const user: UserOutput = await userService.create({ username, password, email })
         return done(null, user, { message: 'User registered successfully!' })
       } catch (error) {
         return done(error)

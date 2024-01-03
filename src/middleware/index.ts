@@ -19,7 +19,7 @@ export const authorizeUser = (req: Request, res: Response, next: NextFunction) =
 
   if (
     authenticatedUser &&
-    (authenticatedUser.id.toString() === requestedUserId || authenticatedUser.isAdmin)
+    (authenticatedUser.userId.toString() === requestedUserId || authenticatedUser.role)
   ) {
     next()
   } else {
@@ -31,7 +31,7 @@ export const authorizeUser = (req: Request, res: Response, next: NextFunction) =
 export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) => {
   const authenticatedUser: any = req.user
 
-  if (authenticatedUser && authenticatedUser.isAdmin) {
+  if (authenticatedUser && authenticatedUser.role) {
     next()
   } else {
     next({ status: 403, message: 'Forbidden.' })
@@ -40,7 +40,7 @@ export const authorizeAdmin = (req: Request, res: Response, next: NextFunction) 
 
 /** Verify if user is authorized to modify protected fields. */
 export const authorizeUserProtected = (req: Request, res: Response, next: NextFunction) => {
-  const protectedFields = ['id', 'isAdmin', 'blockExpiresAt', 'points', 'rankId']
+  const protectedFields = ['id', 'role', 'blockExpiresAt', 'points', 'rankId']
   const authenticatedUser: any = req.user
 
   if (!authenticatedUser) {
@@ -50,7 +50,7 @@ export const authorizeUserProtected = (req: Request, res: Response, next: NextFu
       protectedFields.includes(field)
     )
 
-    if (isModifyingProtectedField && !authenticatedUser.isAdmin) {
+    if (isModifyingProtectedField && !authenticatedUser.role) {
       next({ status: 403, message: 'Unauthorized: You cannot modify protected fields.' })
     } else {
       next()
@@ -64,7 +64,7 @@ export const checkIfBlocked = async (req: Request, res: Response, next: NextFunc
   if (!authenticatedUser) {
     next({ status: 403, message: 'Forbidden.' })
   } else {
-    const user: any = await userService.getById(authenticatedUser.id)
+    const user: any = await userService.getById(authenticatedUser.userId)
     const currentDate = new Date()
     if (user.blockExpiresAt && user.blockExpiresAt > currentDate) {
       next({

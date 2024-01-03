@@ -44,7 +44,7 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
 
         req.login(user, { session: false }, async (error) => {
           if (error) return next(error)
-          const body = { id: user.id, username: user.username, isAdmin: user.isAdmin }
+          const body = { userId: user.userId, username: user.username, role: user.role }
           const token = jwt.sign({ user: body }, JWT_SECRET)
           return res.status(200).json({ message: info.message, token, user: user })
         })

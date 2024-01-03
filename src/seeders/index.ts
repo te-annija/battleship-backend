@@ -35,13 +35,15 @@ const seedDatabase = async () => {
     await userService.create({
       username: 'admin',
       password: 'admin',
-      isAdmin: true
+      email: 'admin@admin.com',
+      role: true
     })
 
     await userService.create({
       username: 'test',
       password: 'test',
-      isAdmin: false
+      email: 'test@test.com',
+      role: false
     })
 
     console.log('Database seeded successfully')

@@ -23,7 +23,7 @@ export class GameController {
     try {
       const user = await this.userService.getByUsername(winnerId)
       if (user) {
-        gameData.winnerId = user.id
+        gameData.winnerId = user.userId
       } else {
         gameData.winnerId = null
       }
@@ -33,43 +33,8 @@ export class GameController {
 
     const game = await this.gameService.create(gameData)
 
-    try {
-      const user = await this.userService.getByUsername(player1.userId)
-      if (user) {
-        player1.userId = user.id
-        player1.rankId = user.rankId
-        await this.gameUserService.create({ gameId: game.id, ...player1 })
-        if (gameType === 'random' && player2.points) {
-          let userPoints = user.points + player1.points
-          if (userPoints < 0) {
-            userPoints = 0
-          }
-
-          await this.userService.update(user.id, { points: userPoints })
-        }
-      }
-    } catch (error: any) {
-      /* empty */
-    }
-
-    try {
-      const user = await this.userService.getByUsername(player2.userId)
-      if (user) {
-        player2.userId = user.id
-        player2.rankId = user.rankId
-        await this.gameUserService.create({ gameId: game.id, ...player2 })
-        if (gameType === 'random' && player2.points) {
-          let userPoints = user.points + player2.points
-          if (userPoints < 0) {
-            userPoints = 0
-          }
-
-          await this.userService.update(user.id, { points: userPoints })
-        }
-      }
-    } catch (error: any) {
-      /* empty */
-    }
+    await this.helperCreateGameUser(player1, game.gameId, gameType)
+    await this.helperCreateGameUser(player2, game.gameId, gameType)
     return game
   }
 
@@ -91,5 +56,32 @@ export class GameController {
   getAll = async (): Promise<GameOutput[]> => {
     return await this.gameService.getAll()
     /** TODO: Implement gameUserService getAll */
+  }
+
+  /**
+   * Helper method to save player game data to database.
+   * @param player The player data.
+   * @param gameId The identification of the game.
+   * @param gameType The game type.
+   */
+  private async helperCreateGameUser(player: any, gameId: number, gameType: string): Promise<void> {
+    try {
+      const user = await this.userService.getByUsername(player.playerId)
+      if (user) {
+        player.userId = user.userId
+        player.rankId = user.rankId
+        await this.gameUserService.create({ gameId: gameId, ...player })
+        if (gameType === 'online' && player.points) {
+          let userPoints = user.points + player.points
+          if (userPoints < 0) {
+            userPoints = 0
+          }
+
+          await this.userService.update(user.userId, { points: userPoints })
+        }
+      }
+    } catch (error: any) {
+      console.log(error.message)
+    }
   }
 }

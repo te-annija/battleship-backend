@@ -4,7 +4,7 @@ import sequelize from './sequelize'
 /** Attributes stored in the Rank model */
 interface RankAttributes {
   /** The primary key and identifier of the rank. */
-  id: number
+  rankId: number
 
   /** The title of the rank. */
   title: string
@@ -23,13 +23,13 @@ interface RankAttributes {
   deletedAt?: Date
 }
 
-export interface RankInput extends Optional<RankAttributes, 'id'> {}
+export interface RankInput extends Optional<RankAttributes, 'rankId'> {}
 
 export interface RankOutput extends Required<RankAttributes> {}
 
 export default class Rank extends Model<RankAttributes, RankInput> implements RankAttributes {
   /** The primary key and identifier of the rank. */
-  public id!: number
+  public rankId!: number
 
   /** The title of the rank. */
   public title!: string
@@ -50,7 +50,7 @@ export default class Rank extends Model<RankAttributes, RankInput> implements Ra
 /** Initilize Rank model fields and its properties. */
 Rank.init(
   {
-    id: {
+    rankId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true

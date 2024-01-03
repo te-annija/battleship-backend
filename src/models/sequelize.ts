@@ -5,7 +5,7 @@
  */
 import { Dialect, Sequelize } from 'sequelize'
 import 'dotenv/config'
-
+console.log(process.env.DATABASE_DIALECT)
 const sequelize = new Sequelize(process.env.DATABASE_URL as string, {
   dialect: process.env.DATABASE_DIALECT as Dialect,
   dialectOptions: {

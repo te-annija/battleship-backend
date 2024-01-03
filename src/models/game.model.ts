@@ -9,9 +9,9 @@ import User from './user.model'
 
 interface GameAttributes {
   /** The primary key and identifier of the game. */
-  id: number
+  gameId: number
 
-  /** The type of the game (computer, friend or random). */
+  /** The type of the game (computer, friend or online). */
   gameType: string
 
   /** Reference to the winning user. */
@@ -23,14 +23,14 @@ interface GameAttributes {
 }
 
 /** Game attributes that are necessary for creation of object and possible to update. */
-export interface GameInput extends Optional<GameAttributes, 'id' | 'winnerId'> {}
+export interface GameInput extends Optional<GameAttributes, 'gameId' | 'winnerId'> {}
 
 /** Game attibutes returned when accessing the model. */
 export interface GameOutput extends Required<GameAttributes> {}
 
 export default class Game extends Model<GameAttributes, GameInput> implements GameAttributes {
   /** The primary key and identifier of the game. */
-  public id!: number
+  public gameId!: number
 
   /** The type of the game (computer, friend or random). */
   public gameType!: string
@@ -45,7 +45,7 @@ export default class Game extends Model<GameAttributes, GameInput> implements Ga
 
 Game.init(
   {
-    id: {
+    gameId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
@@ -59,7 +59,7 @@ Game.init(
       allowNull: true,
       references: {
         model: User,
-        key: 'id'
+        key: 'userId'
       }
     }
   },

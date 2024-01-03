@@ -11,7 +11,7 @@ import Rank from './rank.model'
 
 interface GameUserAttributes {
   /** The primary key and identifier of the game user record. */
-  id: number
+  gameUserId: number
 
   /** Reference to the game. */
   gameId: number
@@ -37,7 +37,8 @@ interface GameUserAttributes {
 }
 
 /** Game User attributes that are necessary for creation of object and possible to update. */
-export interface GameUserInput extends Optional<GameUserAttributes, 'id' | 'points' | 'rankId'> {}
+export interface GameUserInput
+  extends Optional<GameUserAttributes, 'gameUserId' | 'points' | 'rankId'> {}
 
 /** Game User attibutes returned when accessing the model. */
 export interface GameUserOutput extends Required<GameUserAttributes> {}
@@ -47,7 +48,7 @@ export default class GameUser
   implements GameUserAttributes
 {
   /** The primary key and identifier of the game user record. */
-  public id!: number
+  public gameUserId!: number
 
   /** Reference to the game. */
   public gameId!: number
@@ -74,7 +75,7 @@ export default class GameUser
 
 GameUser.init(
   {
-    id: {
+    gameUserId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
@@ -84,7 +85,7 @@ GameUser.init(
       allowNull: false,
       references: {
         model: Game,
-        key: 'id'
+        key: 'gameId'
       }
     },
     userId: {
@@ -92,7 +93,7 @@ GameUser.init(
       allowNull: false,
       references: {
         model: User,
-        key: 'id'
+        key: 'userId'
       }
     },
     gameboard: {
@@ -113,7 +114,7 @@ GameUser.init(
       allowNull: true,
       references: {
         model: Rank,
-        key: 'id'
+        key: 'rankId'
       }
     }
   },

@@ -21,12 +21,12 @@ export class RankService {
 
   /**
    * Updates an existing rank by ID.
-   * @param id The ID of the rank to be updated.
+   * @param rankId The ID of the rank to be updated.
    * @param payload The properties of rank that need to be updated.
    * @returns The updated rank details.
    */
-  update = async (id: number, payload: Partial<RankInput>): Promise<RankOutput> => {
-    const rank: Rank | null = await Rank.findByPk(id)
+  update = async (rankId: number, payload: Partial<RankInput>): Promise<RankOutput> => {
+    const rank: Rank | null = await Rank.findByPk(rankId)
     if (!rank) {
       throw new Error('Could not update rank. Rank not found.')
     }
@@ -35,11 +35,11 @@ export class RankService {
 
   /**
    * Retrieves a rank by ID.
-   * @param id The ID of the rank to retrieve.
+   * @param rankId The ID of the rank to retrieve.
    * @returns The rank details of the rank with the given ID or null if not found.
    */
-  getById = async (id: number): Promise<RankOutput> => {
-    const rank: Rank | null = await Rank.findByPk(id)
+  getById = async (rankId: number): Promise<RankOutput> => {
+    const rank: Rank | null = await Rank.findByPk(rankId)
     if (!rank) {
       throw new Error('Could not get rank. Rank not found.')
     }
@@ -48,12 +48,12 @@ export class RankService {
 
   /**
    * Deletes a rank by ID.
-   * @param id The ID of the rank to delete.
+   * @param rankId The ID of the rank to delete.
    * @returns Boolean indicating whether the deletion was successful.
    */
-  deleteById = async (id: number): Promise<boolean> => {
+  deleteById = async (rankId: number): Promise<boolean> => {
     const deletedRankCount: number = await Rank.destroy({
-      where: { id },
+      where: { rankId },
       individualHooks: true
     })
     return !!deletedRankCount
@@ -61,12 +61,12 @@ export class RankService {
 
   /**
    * Restores a rank by ID from soft-delete.
-   * @param id The ID of the rank to restore.
+   * @param rankId The ID of the rank to restore.
    * @returns
    */
-  restoreById = async (id: number): Promise<void> => {
+  restoreById = async (rankId: number): Promise<void> => {
     return await Rank.restore({
-      where: { id }
+      where: { rankId }
     })
   }
 

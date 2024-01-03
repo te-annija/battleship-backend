@@ -10,10 +10,13 @@ import { DataTypes, Model, Op, Optional } from 'sequelize'
 /** Attributes stored in the User model */
 interface UserAttributes {
   /** The primary key and identifier of the user. */
-  id: number
+  userId: number
 
   /** The user unique username. Used for identification. */
   username: string
+
+  /** The user email. */
+  email: string
 
   /** The user password stored as a hashed value. */
   password: string
@@ -25,7 +28,7 @@ interface UserAttributes {
   rankId: string
 
   /** True if user is a administrator, false otherwise. */
-  isAdmin: boolean
+  role: boolean
 
   /** Date and time when the user's block will be lifted. */
   blockExpiresAt?: Date | null
@@ -37,7 +40,7 @@ interface UserAttributes {
 
 /** User attributes that are necessary for creation of object and possible to update. */
 export interface UserInput
-  extends Optional<UserAttributes, 'id' | 'isAdmin' | 'rankId' | 'points'> {}
+  extends Optional<UserAttributes, 'userId' | 'role' | 'rankId' | 'points'> {}
 
 /** User attibutes returned when accessing the model. */
 export interface UserOutput extends Required<UserAttributes> {}
@@ -45,10 +48,13 @@ export interface UserOutput extends Required<UserAttributes> {}
 /** The User model stored in the database. */
 export default class User extends Model<UserAttributes, UserInput> implements UserAttributes {
   /** The primary key and identifier of the user. */
-  public id!: number
+  public userId!: number
 
   /** The user unique username. Used for identification. */
   public username!: string
+
+  /** The user email. */
+  public email!: string
 
   /** The user password stored as a hashed value. */
   public password!: string
@@ -60,7 +66,7 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
   public rankId!: string
 
   /** True if user is a administrator, false otherwise. */
-  public isAdmin!: boolean
+  public role!: boolean
 
   /** Date and time when the user's block will be lifted. */
   public blockExpiresAt!: Date | null
@@ -75,7 +81,7 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
 /** Initilize User model fields and its properties. */
 User.init(
   {
-    id: {
+    userId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true
@@ -91,6 +97,15 @@ User.init(
         len: {
           args: [2, 32],
           msg: 'Username length must be between 2 and 32 characters'
+        }
+      }
+    },
+    email: {
+      type: DataTypes.STRING(64),
+      allowNull: false,
+      validate: {
+        isEmail: {
+          msg: 'Email is not valid'
         }
       }
     },
@@ -124,10 +139,10 @@ User.init(
       allowNull: false,
       references: {
         model: Rank,
-        key: 'id'
+        key: 'rankId'
       }
     },
-    isAdmin: {
+    role: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false
@@ -151,8 +166,8 @@ User.addHook('beforeDestroy', (user: User) => {
 User.addHook('beforeUpdate', async (user: User) => {
   /** Forbid to change crutial data for the first admin. */
   if (
-    user.id === 1 &&
-    (user.changed('username') || user.changed('isAdmin') || user.changed('blockExpiresAt'))
+    user.userId === 1 &&
+    (user.changed('username') || user.changed('role') || user.changed('blockExpiresAt'))
   ) {
     return Promise.reject(new Error('Unauthorized to update this user data.'))
   }
@@ -165,7 +180,7 @@ User.addHook('beforeUpdate', async (user: User) => {
       })
 
       if (rank) {
-        user.rankId = rank.id.toString()
+        user.rankId = rank.rankId.toString()
       }
     } catch (error: any) {
       /* empty */

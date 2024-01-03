@@ -26,18 +26,18 @@ export class UserService {
 
   /**
    * Updates an existing user by ID.
-   * @param id The ID of the user to be updated.
+   * @param userId The ID of the user to be updated.
    * @param payload The properties of user that needs to be updated.
    * @returns The updated user details.
    */
-  update = async (id: number, payload: Partial<UserInput>): Promise<UserOutput> => {
+  update = async (userId: number, payload: Partial<UserInput>): Promise<UserOutput> => {
     if (payload.password) {
       const salt: string = await bcrypt.genSalt(10)
       const hash: string = await bcrypt.hash(payload.password, salt)
       payload.password = hash
     }
 
-    const user: User | null = await User.findByPk(id)
+    const user: User | null = await User.findByPk(userId)
     if (!user) {
       throw new Error('Could not update user. User not found.')
     }
@@ -46,11 +46,11 @@ export class UserService {
 
   /**
    * Retrieves a user by ID.
-   * @param id The ID of the user to retrieve.
+   * @param userId The ID of the user to retrieve.
    * @returns The user details of user with given ID details or null if not found.
    */
-  getById = async (id: number): Promise<User> => {
-    const user: User | null = await User.findByPk(id, {
+  getById = async (userId: number): Promise<User> => {
+    const user: User | null = await User.findByPk(userId, {
       include: [
         {
           model: Rank,
@@ -85,12 +85,12 @@ export class UserService {
 
   /**
    * Deletes a user by ID.
-   * @param id The ID of the user to delete.
+   * @param userId The ID of the user to delete.
    * @returns Boolean indicating whether the deletion was successful.
    */
-  deleteById = async (id: number): Promise<boolean> => {
+  deleteById = async (userId: number): Promise<boolean> => {
     const deletedUserCount: number = await User.destroy({
-      where: { id },
+      where: { userId },
       individualHooks: true
     })
     return !!deletedUserCount
@@ -98,12 +98,12 @@ export class UserService {
 
   /**
    * Restores a user by ID from soft-delete.
-   * @param id The ID of the user to restore.
+   * @param userId The ID of the user to restore.
    * @returns
    */
-  restoreById = async (id: number): Promise<void> => {
+  restoreById = async (userId: number): Promise<void> => {
     return await User.restore({
-      where: { id }
+      where: { userId }
     })
   }
 
@@ -125,10 +125,10 @@ export class UserService {
 
   /**
    * Retrieves user leaderboard position based on total gained points.
-   * @param id he ID of the user.
+   * @param userId The ID of the user.
    * @returns The leaderboard position of the user.
    */
-  getCurrentLeaderboardPosition = async (id: number): Promise<number> => {
+  getCurrentLeaderboardPosition = async (userId: number): Promise<number> => {
     try {
       // Fetch users sorted by points in descending order
       const users = await User.findAll({
@@ -136,7 +136,7 @@ export class UserService {
       })
 
       // Find the index of the user in the sorted list (adding 1 to get 1-based position)
-      return users.findIndex((user) => user.id === id) + 1
+      return users.findIndex((user) => user.userId === userId) + 1
     } catch (error) {
       console.error('Error occurred while fetching leaderboard position:', error)
       throw error
