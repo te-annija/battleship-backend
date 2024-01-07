@@ -54,7 +54,8 @@ export class UserService {
       include: [
         {
           model: Rank,
-          as: 'rank'
+          as: 'rank',
+          paranoid: false
         }
       ]
     })
@@ -77,7 +78,8 @@ export class UserService {
       include: [
         {
           model: Rank,
-          as: 'rank'
+          as: 'rank',
+          paranoid: false
         }
       ]
     })
@@ -117,7 +119,8 @@ export class UserService {
       include: [
         {
           model: Rank,
-          as: 'rank'
+          as: 'rank',
+          paranoid: false
         }
       ]
     })

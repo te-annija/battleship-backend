@@ -25,7 +25,7 @@ interface UserAttributes {
   points: number
 
   /** Reference to the user rank. */
-  rankId: string
+  rankId: number
 
   /** True if user is a administrator, false otherwise. */
   role: boolean
@@ -63,7 +63,7 @@ export default class User extends Model<UserAttributes, UserInput> implements Us
   public points!: number
 
   /** Reference to the user rank. */
-  public rankId!: string
+  public rankId!: number
 
   /** True if user is a administrator, false otherwise. */
   public role!: boolean
@@ -172,6 +172,7 @@ User.addHook('beforeUpdate', async (user: User) => {
     return Promise.reject(new Error('Unauthorized to update this user data.'))
   }
 
+  /** Update user rank if points changed. */
   if (user.changed('points')) {
     try {
       const rank = await Rank.findOne({
@@ -180,7 +181,7 @@ User.addHook('beforeUpdate', async (user: User) => {
       })
 
       if (rank) {
-        user.rankId = rank.rankId.toString()
+        user.rankId = rank.rankId
       }
     } catch (error: any) {
       /* empty */

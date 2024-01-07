@@ -43,7 +43,7 @@ export class RankController {
     }
 
     // Handle sorting parameters.
-    const sortField: string = sortBy || 'createdAt'
+    const sortField: string = sortBy || 'rankId'
     const sortOrderValue: string = sortOrder === 'desc' ? 'DESC' : 'ASC'
 
     // Handle filter parameters.
@@ -65,9 +65,12 @@ export class RankController {
                 [Op.lte]: new Date(date.setUTCHours(23, 59, 59))
               }
             }
-          } else {
-            // Handle other types of filters (non-date fields)
+          } else if (key === 'title' || key === 'icon') {
+            // Handle text filtering
             filterCriteria[key] = { [Op.like]: `%${value}%` }
+          } else {
+            // Handle other types of filters (non-daten non-text fields)
+            filterCriteria[key] = { [Op.eq]: value }
           }
         }
       })

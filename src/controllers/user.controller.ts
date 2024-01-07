@@ -53,7 +53,7 @@ export class UserController {
     }
 
     // Handle sorting parameters.
-    const sortField: string = sortBy || 'createdAt'
+    const sortField: string = sortBy || 'userId'
     const sortOrderValue: string = sortOrder === 'desc' ? 'DESC' : 'ASC'
 
     // Handle filter parameters.
@@ -75,9 +75,12 @@ export class UserController {
                 [Op.lte]: new Date(date.setUTCHours(23, 59, 59))
               }
             }
-          } else {
-            // Handle other types of filters (non-date fields)
+          } else if (key === 'username' || key === 'email') {
+            // Handle text filtering
             filterCriteria[key] = { [Op.like]: `%${value}%` }
+          } else {
+            // Handle other types of filters (non-daten non-text fields)
+            filterCriteria[key] = { [Op.eq]: value }
           }
         }
       })
@@ -169,36 +172,34 @@ export class UserController {
     if (req.query.filterBy && typeof req.query.filterBy === 'string') {
       req.query.filterBy.split(',').forEach((filter) => {
         const [key, value] = filter.split(':')
-        if (key === 'winner') {
-          filterCriteria[key] = value === '1' ? user.username : { [Op.ne]: user.username }
-        } else {
-          filterCriteria[key] = { [Op.like]: `%${value}%` }
-        }
+        filterCriteria[key] = { [Op.like]: `%${value}%` }
       })
     }
 
     return user.getUserGames({
+      order: [['createdAt', 'desc']],
       where: {
         gameType: filterCriteria.gameType || { [Op.like]: `%%` }
       },
       include: [
         {
-          model: User,
-          as: 'winner',
-          attributes: ['username'],
-          required: false,
-          where: {
-            username: filterCriteria.winner || { [Op.like]: `%%` }
-          }
-        },
-        {
-          model: User,
-          as: 'players',
-          attributes: ['username'],
-          include: {
-            model: Rank,
-            as: 'rank'
-          }
+          model: GameUser,
+          as: 'userData',
+          attributes: ['userId', 'rankId', 'points'],
+          paranoid: false,
+          include: [
+            {
+              model: Rank,
+              as: 'rank',
+              paranoid: false
+            },
+            {
+              model: User,
+              as: 'user',
+              attributes: ['username', 'deletedAt'],
+              paranoid: false
+            }
+          ]
         }
       ]
     })

@@ -19,7 +19,7 @@ const fileFilter = (req: Request, file: any, cb: any) => {
   if (file.mimetype === 'image/svg' || file.mimetype === 'image/png') {
     cb(null, true)
   } else {
-    cb(null, false)
+    cb(new Error('Only images with extentions .svg and .png are allowed'))
   }
 }
 

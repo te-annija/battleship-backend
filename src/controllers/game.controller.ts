@@ -8,7 +8,7 @@ import { GameService, GameUserService, UserService } from '../services'
 import { GameInput, GameOutput } from '../models/game.model'
 
 /**
- * Class contains controllers for Game CRUD operations.
+ * Class contains controllers for Game operations.
  */
 export class GameController {
   private gameService = new GameService()
@@ -36,26 +36,6 @@ export class GameController {
     await this.helperCreateGameUser(player1, game.gameId, gameType)
     await this.helperCreateGameUser(player2, game.gameId, gameType)
     return game
-  }
-
-  update = async (request: Request): Promise<GameOutput> => {
-    return await this.gameService.update(Number(request.params.id), request.body)
-    /** TODO: Implement gameUserService update */
-  }
-
-  getById = async (request: Request): Promise<GameOutput> => {
-    return await this.gameService.getById(Number(request.params.id))
-    /** TODO: Implement gameUserService get */
-  }
-
-  deleteById = async (request: Request): Promise<Boolean> => {
-    return await this.gameService.deleteById(Number(request.params.id))
-    /** TODO: Implement gameUserService delete */
-  }
-
-  getAll = async (): Promise<GameOutput[]> => {
-    return await this.gameService.getAll()
-    /** TODO: Implement gameUserService getAll */
   }
 
   /**

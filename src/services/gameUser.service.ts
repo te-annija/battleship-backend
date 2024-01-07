@@ -21,54 +21,6 @@ export class GameUserService {
   }
 
   /**
-   * Updates an existing game user by ID.
-   * @param id The ID of the game user to be updated.
-   * @param payload The properties of game user that needs to be updated.
-   * @returns The updated game user details.
-   */
-  update = async (gameUserId: number, payload: Partial<GameUserInput>): Promise<GameUserOutput> => {
-    const game: GameUser | null = await GameUser.findByPk(gameUserId)
-
-    if (!game) {
-      throw new Error('Could not update game. Game not found.')
-    }
-    return await game.update(payload)
-  }
-
-  /**
-   * Retrieves a game user by ID.
-   * @param gameUserId The ID of the game to retrieve.
-   * @returns The Game details of game with given ID details or null if not found.
-   */
-  getById = async (gameUserId: number): Promise<GameUserOutput> => {
-    const game: GameUser | null = await GameUser.findByPk(gameUserId)
-    if (!game) {
-      throw new Error('Could get game. Game not found.')
-    }
-    return game
-  }
-
-  /**
-   * Deletes a game user by ID.
-   * @param gameUserId The ID of the game user to delete.
-   * @returns Boolean indicating whether the deletion was successful.
-   */
-  deleteById = async (gameUserId: number): Promise<boolean> => {
-    const deletedGameCount: number = await GameUser.destroy({
-      where: { gameUserId }
-    })
-    return !!deletedGameCount
-  }
-
-  /**
-   * Retrieves all game users.
-   * @returns Array of game objects containing all game users details.
-   */
-  getAll = async (): Promise<GameUserOutput[]> => {
-    return GameUser.findAll()
-  }
-
-  /**
    * Retrieve quantitative information about user games.
    * @param userId The unique identifier of the user.
    * @param where Conditions to count

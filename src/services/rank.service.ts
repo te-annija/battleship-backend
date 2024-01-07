@@ -66,7 +66,8 @@ export class RankService {
    */
   restoreById = async (rankId: number): Promise<void> => {
     return await Rank.restore({
-      where: { rankId }
+      where: { rankId },
+      individualHooks: true
     })
   }
 

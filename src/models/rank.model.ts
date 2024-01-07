@@ -1,5 +1,6 @@
-import { DataTypes, Model, Optional } from 'sequelize'
+import { DataTypes, Model, Op, Optional } from 'sequelize'
 import sequelize from './sequelize'
+import User from './user.model'
 
 /** Attributes stored in the Rank model */
 interface RankAttributes {
@@ -109,3 +110,62 @@ Rank.init(
   },
   { timestamps: true, sequelize, paranoid: true }
 )
+
+Rank.addHook('beforeDestroy', async (rank: Rank) => {
+  /** Forbid deleting the first rank. */
+  if (rank.rankId === 1) {
+    return Promise.reject(new Error('Unauthorized to delete the first rank.'))
+  }
+})
+
+Rank.addHook('beforeUpdate', async (rank: Rank) => {
+  /** Forbid to change crutial data for the first admin. */
+  if (rank.rankId === 1 && rank.changed('minimumPoints')) {
+    return Promise.reject(new Error('Unauthorized to update the first rank points.'))
+  }
+})
+
+Rank.addHook('afterCreate', async () => {
+  /** Recalculate ranks for users. */
+  const users = await User.findAll({ paranoid: false })
+  await recalculateUserRank(users)
+})
+
+Rank.addHook('afterUpdate', async () => {
+  /** Recalculate ranks for users. */
+  const users = await User.findAll({ paranoid: false })
+  await recalculateUserRank(users)
+})
+
+Rank.addHook('afterDestroy', async (rank: Rank) => {
+  /** Recalculate ranks for users. */
+  const users = await User.findAll({ where: { rankId: rank.rankId }, paranoid: false })
+  await recalculateUserRank(users)
+})
+
+Rank.addHook('afterRestore', async () => {
+  /** Recalculate ranks for users. */
+  const users = await User.findAll({ paranoid: false })
+  await recalculateUserRank(users)
+})
+
+/**
+ * Helper method to update user ranks.
+ * @param users The list of users to check.
+ */
+const recalculateUserRank = async (users: User[]): Promise<void> => {
+  const recalculations = users.map(async (user) => {
+    const rank = await Rank.findOne({
+      where: { minimumPoints: { [Op.lte]: user.points } },
+      order: [['minimumPoints', 'DESC']]
+    })
+
+    if (rank && rank.rankId !== user.rankId) {
+      user.rankId = rank.rankId
+      await user.save()
+    }
+  })
+
+  // Await all recalculations before continuing
+  await Promise.all(recalculations)
+}
