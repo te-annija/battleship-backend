@@ -1,3 +1,7 @@
 node_modules/
 dist/
 config/local.json
+/public
+
+# Environment file
+.env
